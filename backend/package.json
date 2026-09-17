@@ -2,9 +2,11 @@
   "name": "canteenai-backend",
   "version": "1.0.0",
   "private": true,
-  "scripts": {  "dev": "tsx watch src/server.ts",
+  "scripts": { "dev": "tsx watch src/server.ts",
   "start": "tsx src/server.ts",
-  "seed": "tsx prisma/seed.ts"
+  "seed": "tsx prisma/seed.ts",
+  "prisma:generate": "prisma generate"
+
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

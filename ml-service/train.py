@@ -1,0 +1,1 @@
+print("CanteenAI ML environment is ready. The Random Forest model is trained on demand by /predict.")

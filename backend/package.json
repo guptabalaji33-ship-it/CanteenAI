@@ -5,9 +5,6 @@
   "scripts": {  "dev": "tsx watch src/server.ts",
   "start": "tsx src/server.ts",
   "seed": "tsx prisma/seed.ts"
-
-    "dev": "tsx watch src/server.ts",
-    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

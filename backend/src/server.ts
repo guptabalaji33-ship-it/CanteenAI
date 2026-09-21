@@ -86,35 +86,77 @@ app.get("/api/predictions", async (_,res)=>{
   res.json(rows);
 });
 
-app.post("/api/predictions/generate", async (_,res)=>{
-  try{
-    const foods=await prisma.foodItem.findMany();
-    const historical=await prisma.orderItem.findMany({include:{order:true,foodItem:true}});
-    const payload=historical.map(x=>({
-      foodItemId:x.foodItemId,
-      quantity:x.quantity,
-      createdAt:x.order.createdAt,
-      timeSlot:x.order.pickupSlot
-    }));
-    const r=await fetch(`${process.env.ML_URL || "https://canteenai-ml-hg3e.onrender.com"}/predict`,{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({items:foods.map(f=>({id:f.id,name:f.name})),history:payload})
+app.post("/api/predictions/generate", async (_, res) => {
+  try {
+    const foods = await prisma.foodItem.findMany();
+
+    const historical = await prisma.orderItem.findMany({
+      include: { order: true, foodItem: true }
     });
-    if(!r.ok){
-  const errorText = await r.text();
-  console.error("ML STATUS:", r.status);
-  console.error("ML RESPONSE:", errorText);
-  throw new Error(`ML service returned ${r.status}: ${errorText}`);
-}
-const result:any=await r.json();
-    const result:any=await r.json();
-    await prisma.prediction.deleteMany();
-    for(const p of result.predictions){
-      await prisma.prediction.create({data:{
-        foodItemId:p.foodItemId,date:p.date,timeSlot:p.timeSlot,
-        predictedQuantity:p.predictedQuantity,recommendedQty:p.recommendedQty,confidence:p.confidence
-      }});
+
+    const payload = historical.map(x => ({
+      foodItemId: x.foodItemId,
+      quantity: x.quantity,
+      createdAt: x.order.createdAt,
+      timeSlot: x.order.pickupSlot
+    }));
+
+    const r = await fetch(
+      "https://canteenai-ml-hg3e.onrender.com/predict",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: foods.map(f => ({
+            id: f.id,
+            name: f.name
+          })),
+          history: payload
+        })
+      }
+    );
+
+    const responseText = await r.text();
+
+    if (!r.ok) {
+      console.error("ML STATUS:", r.status);
+      console.error("ML RESPONSE:", responseText);
+      return res.status(503).json({
+        error: `ML service returned ${r.status}: ${responseText}`
+      });
     }
+
+    const result = JSON.parse(responseText);
+
+    await prisma.prediction.deleteMany();
+
+    for (const p of result.predictions) {
+      await prisma.prediction.create({
+        data: {
+          foodItemId: p.foodItemId,
+          date: p.date,
+          timeSlot: p.timeSlot,
+          predictedQuantity: p.predictedQuantity,
+          recommendedQty: p.recommendedQty,
+          confidence: p.confidence
+        }
+      });
+    }
+
+    const rows = await prisma.prediction.findMany({
+      include: { foodItem: true },
+      orderBy: { predictedQuantity: "desc" }
+    });
+
+    res.json(rows);
+
+  } catch (e) {
+    console.error("ML ERROR:", e);
+    res.status(503).json({
+      error: e instanceof Error ? e.message : String(e)
+    });
+  }
+});    }
     const rows=await prisma.prediction.findMany({include:{foodItem:true},orderBy:{predictedQuantity:"desc"}});
     res.json(rows);
   }catch(e){

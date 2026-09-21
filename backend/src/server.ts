@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = Number(process.env.PORT || 4000);
-const ML_URL = process.env.ML_URL || "http://localhost:8000";
+const ML_URL = "https://canteenai-ml-hg3e.onrender.com";
 
 app.get("/health", (_,res)=>res.json({ok:true, service:"CanteenAI API"}));
 
@@ -96,7 +96,7 @@ app.post("/api/predictions/generate", async (_,res)=>{
       createdAt:x.order.createdAt,
       timeSlot:x.order.pickupSlot
     }));
-    const r=await fetch(`${ML_URL}/predict`,{
+    const r=await fetch(`${process.env.ML_URL || "https://canteenai-ml-hg3e.onrender.com"}/predict`,{
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({items:foods.map(f=>({id:f.id,name:f.name})),history:payload})
     });

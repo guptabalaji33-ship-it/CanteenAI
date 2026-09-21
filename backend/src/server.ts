@@ -100,7 +100,13 @@ app.post("/api/predictions/generate", async (_,res)=>{
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({items:foods.map(f=>({id:f.id,name:f.name})),history:payload})
     });
-    if(!r.ok) throw new Error("ML service unavailable");
+    if(!r.ok){
+  const errorText = await r.text();
+  console.error("ML STATUS:", r.status);
+  console.error("ML RESPONSE:", errorText);
+  throw new Error(`ML service returned ${r.status}: ${errorText}`);
+}
+const result:any=await r.json();
     const result:any=await r.json();
     await prisma.prediction.deleteMany();
     for(const p of result.predictions){

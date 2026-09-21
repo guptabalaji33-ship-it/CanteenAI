@@ -112,8 +112,11 @@ app.post("/api/predictions/generate", async (_,res)=>{
     const rows=await prisma.prediction.findMany({include:{foodItem:true},orderBy:{predictedQuantity:"desc"}});
     res.json(rows);
   }catch(e){
-    res.status(503).json({error:"Start the AI service on port 8000 first."});
-  }
+  console.error("ML ERROR:", e);
+  res.status(503).json({
+    error: e instanceof Error ? e.message : String(e)
+  });
+}
 });
 
 app.listen(PORT,()=>console.log(`CanteenAI API running on http://localhost:${PORT}`));

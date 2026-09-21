@@ -8,9 +8,23 @@ const foods = [
   ["Masala Dosa","Crispy dosa with potato masala",55,"https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=900"],
   ["Veg Burger","Crispy veggie patty burger",70,"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900"],
   ["Cold Coffee","Chilled creamy coffee",50,"https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=900"],
-  ["Samosa","Crispy potato samosa",20,"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?w=900"]
-] as const;
+  ["Samosa","Crispy potato samosa",20,"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?w=900"],
 
+  ["Chole Bhature","Spicy chickpeas with fluffy bhature",90,"https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=900"],
+  ["Aloo Paratha","Stuffed potato paratha with Indian spices",60,"https://images.unsplash.com/photo-1628294895950-9805252327bc?w=900"],
+  ["Veg Fried Rice","Indo-Chinese vegetable fried rice",75,"https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=900"],
+  ["Veg Manchurian","Crispy vegetable balls in spicy sauce",80,"https://images.unsplash.com/photo-1617622141573-1f2f7e8e8b3f?w=900"],
+  ["French Fries","Crispy golden potato fries",50,"https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=900"],
+  ["Veg Momos","Steamed vegetable dumplings",70,"https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=900"],
+  ["Pav Bhaji","Spicy mashed vegetables with buttered pav",65,"https://images.unsplash.com/photo-1601050690597-df0568f70950?w=900"],
+  ["Masala Chai","Hot Indian masala tea",15,"https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=900"],
+  ["Sweet Lassi","Chilled creamy sweet lassi",40,"https://images.unsplash.com/photo-1571072556097-7a3f7f6b8d3a?w=900"],
+  ["Mango Shake","Creamy chilled mango shake",70,"https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=900"],
+  ["Veg Sandwich","Fresh vegetable sandwich with cheese",55,"https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=900"],
+  ["Spring Rolls","Crispy vegetable spring rolls",60,"https://images.unsplash.com/photo-1548507200-cc4e6e7e8b8a?w=900"],
+  ["Pasta","Creamy Italian-style vegetable pasta",85,"https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=900"],
+  ["Chocolate Brownie","Soft chocolate brownie",60,"https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=900"]
+] as const;
 async function main() {
   await prisma.prediction.deleteMany();
   await prisma.orderItem.deleteMany();

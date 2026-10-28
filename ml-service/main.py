@@ -1,4 +1,3 @@
-```python
 from datetime import date, timedelta
 from collections import defaultdict
 

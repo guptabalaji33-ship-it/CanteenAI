@@ -156,15 +156,4 @@ app.post("/api/predictions/generate", async (_, res) => {
       error: e instanceof Error ? e.message : String(e)
     });
   }
-});    }
-    const rows=await prisma.prediction.findMany({include:{foodItem:true},orderBy:{predictedQuantity:"desc"}});
-    res.json(rows);
-  }catch(e){
-  console.error("ML ERROR:", e);
-  res.status(503).json({
-    error: e instanceof Error ? e.message : String(e)
-  });
-}
-});
-
 app.listen(PORT,()=>console.log(`CanteenAI API running on http://localhost:${PORT}`));

@@ -2,7 +2,7 @@ import React,{useEffect,useMemo,useState} from "react";
 import {Alert,Image,Pressable,SafeAreaView,ScrollView,StatusBar,StyleSheet,Text,TextInput,View} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 
-const API=process.env.EXPO_PUBLIC_API_URL||"http://localhost:4000";
+const API="https://canteenai-backend-5pw0.onrender.com";
 const GREEN="#16a34a", DARK="#07130d", CARD="#102219", MUTED="#91a99a", WHITE="#f3faf5";
 
 type Food={id:number;name:string;description:string;price:number;image:string};

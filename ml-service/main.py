@@ -99,5 +99,5 @@ def predict(req: PredictRequest):
             })
 
     return {"predictions": predictions}
-```
+
 

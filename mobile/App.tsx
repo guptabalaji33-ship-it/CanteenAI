@@ -20,7 +20,16 @@ export default function App(){
  const [slot,setSlot]=useState("1:00 PM");
  const [loading,setLoading]=useState(false);
 
- async function get(path:string,opts?:any){const r=await fetch(API+path,opts); if(!r.ok) throw new Error("API error"); return r.json();}
+  async function get(path: string, opts?: any) {
+  const r = await fetch(API + path, opts);
+  const body = await r.text();
+
+  if (!r.ok) {
+    throw new Error(`API ${r.status}: ${body}`);
+  }
+
+  return body ? JSON.parse(body) : {};
+}
  async function load(){
   try{
    setFoods(await get("/api/menu"));
@@ -45,13 +54,27 @@ export default function App(){
   finally{setLoading(false);}
  }
 
- async function forecast(){
-  setLoading(true);
-  try{setPredictions(await get("/api/predictions/generate",{method:"POST"}));}
-  catch{Alert.alert("AI service offline","Start the Python ML service on port 8000.");}
-  finally{setLoading(false);}
- }
+async function forecast() {
+  if (loading) return;
 
+  setLoading(true);
+
+  try {
+    const result = await get("/api/predictions/generate", {
+      method: "POST",
+    });
+
+    setPredictions(Array.isArray(result) ? result : result.predictions ?? []);
+    setTab("forecast");
+  } catch (e) {
+    Alert.alert(
+      "Forecast Error",
+      e instanceof Error ? e.message : "Could not generate forecast."
+    );
+  } finally {
+    setLoading(false);
+  }
+}
  const Header=()=>(
   <View style={styles.header}>
    <View><Text style={styles.brand}>Canteen<Text style={{color:GREEN}}>AI</Text></Text><Text style={styles.sub}>SMART CAMPUS FOOD</Text></View>
@@ -78,7 +101,8 @@ export default function App(){
 
  const Slots=()=> <View style={styles.slots}>{["12:00 PM","12:30 PM","1:00 PM","1:30 PM","2:00 PM"].map(x=><Pressable key={x} onPress={()=>setSlot(x)} style={[styles.slot,slot===x&&styles.slotActive]}><Text style={[styles.slotText,slot===x&&{color:DARK,fontWeight:"800"}]}>{x}</Text></Pressable>)}</View>;
 
- const Owner=()=>{if(tab==="owner"&&predictions.length===0)return <Screen title="Owner Intelligence"><Text style={styles.ownerIntro}>Turn historical orders into tomorrow's preparation plan.</Text><View style={styles.stats}><Stat label="Today's Orders" value={dashboard?.orders??"—"} icon="receipt-outline"/><Stat label="Revenue" value={`₹${Math.round(dashboard?.revenue??0)}`} icon="cash-outline"/></View><Text style={styles.section}>Live demand</Text>{(dashboard?.popular||[]).slice(0,4).map((x:any)=><View style={styles.demand} key={x.name}><Text style={styles.itemTitle}>{x.name}</Text><Text style={styles.muted}>{x.quantity} units ordered today</Text><View style={styles.bar}><View style={[styles.barFill,{width:`${Math.min(100,x.quantity*7)}%`}]}/></View></View>)}<Pressable style={styles.aiCard} onPress={forecast}><View style={styles.aiIcon}><Ionicons name="sparkles" size={24} color={DARK}/></View><View style={{flex:1}}><Text style={styles.aiTitle}>AI Demand Forecast</Text><Text style={styles.muted}>Predict tomorrow's food demand and prep quantity</Text></View><Ionicons name="chevron-forward" size={24} color={WHITE}/></Pressable></Screen>;
+const Owner=()=>{
+  if(tab!=="forecast") return <Screen title="Owner Intelligence"><Text style={styles.ownerIntro}>Turn historical orders into tomorrow's preparation plan.</Text><View style={styles.stats}><Stat label="Today's Orders" value={dashboard?.orders??"—"} icon="receipt-outline"/><Stat label="Revenue" value={`₹${Math.round(dashboard?.revenue??0)}`} icon="cash-outline"/></View><Text style={styles.section}>Live demand</Text>{(dashboard?.popular||[]).slice(0,4).map((x:any)=><View style={styles.demand} key={x.name}><Text style={styles.itemTitle}>{x.name}</Text><Text style={styles.muted}>{x.quantity} units ordered today</Text><View style={styles.bar}><View style={[styles.barFill,{width:`${Math.min(100,x.quantity*7)}%`}]}/></View></View>)}<Pressable style={styles.aiCard} onPress={forecast}><View style={styles.aiIcon}><Ionicons name="sparkles" size={24} color={DARK}/></View><View style={{flex:1}}><Text style={styles.aiTitle}>AI Demand Forecast</Text><Text style={styles.muted}>Predict tomorrow's food demand and prep quantity</Text></View><Ionicons name="chevron-forward" size={24} color={WHITE}/></Pressable></Screen>;
  return <Screen title="AI Forecast"><Pressable style={styles.primary} onPress={forecast}><Text style={styles.primaryText}>{loading?"ANALYZING...":"REFRESH AI FORECAST"}</Text></Pressable>{predictions.map((p,i)=><View style={styles.pred} key={i}><View style={{flex:1}}><Text style={styles.itemTitle}>{p.foodItem.name}</Text><Text style={styles.muted}>{p.timeSlot} • {Math.round(p.confidence*100)}% confidence</Text></View><View style={{alignItems:"flex-end"}}><Text style={styles.predNum}>{p.predictedQuantity}</Text><Text style={styles.muted}>prepare {p.recommendedQty}</Text></View></View>)}</Screen>};
 
  const Screen=({title,children}:{title:string;children:any})=><SafeAreaView style={styles.safe}><StatusBar barStyle="light-content"/><Header/><ScrollView contentContainerStyle={styles.content}><Text style={styles.pageTitle}>{title}</Text>{children}</ScrollView><Bottom/></SafeAreaView>;

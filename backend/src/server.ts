@@ -101,32 +101,56 @@ app.post("/api/predictions/generate", async (_, res) => {
       timeSlot: x.order.pickupSlot
     }));
 
-    const r = await fetch(
-      "https://canteenai-ml-hg3e.onrender.com/predict",
+       const ollamaResponse = await fetch(
+      "http://localhost:11434/api/chat",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: foods.map(f => ({
-            id: f.id,
-            name: f.name
-          })),
-          history: payload
+          model: "qwen3.5:4b",
+          stream: false,
+          format: "json",
+          messages: [
+            {
+              role: "system",
+              content: `
+You are Qwen AI, the food demand forecasting assistant for CanteenAI.
+Analyze the provided historical orders and food items.
+Generate forecasts for the next day.
+Return valid JSON with a predictions array.
+Each prediction must contain:
+foodItemId, date, timeSlot, predictedQuantity, recommendedQty, confidence.
+Use only foodItemId values provided in the input.
+Quantities must be non-negative numbers.
+Confidence must be between 0 and 1.
+If historical data is insufficient, make conservative estimates.
+              `
+            },
+            {
+              role: "user",
+              content: JSON.stringify({
+                items: foods.map(f => ({
+                  id: f.id,
+                  name: f.name
+                })),
+                history: payload
+              })
+            }
+          ]
         })
       }
     );
 
-    const responseText = await r.text();
-
-    if (!r.ok) {
-      console.error("ML STATUS:", r.status);
-      console.error("ML RESPONSE:", responseText);
-      return res.status(503).json({
-        error: `ML service returned ${r.status}: ${responseText}`
-      });
+    if (!ollamaResponse.ok) {
+      throw new Error(`Ollama returned HTTP ${ollamaResponse.status}`);
     }
 
-    const result = JSON.parse(responseText);
+    const ollamaResult = await ollamaResponse.json();
+    const result = JSON.parse(ollamaResult.message.content);
+
+    if (!Array.isArray(result.predictions)) {
+      throw new Error("Qwen returned an invalid predictions format");
+    }
 
     await prisma.prediction.deleteMany();
 
@@ -136,9 +160,9 @@ app.post("/api/predictions/generate", async (_, res) => {
           foodItemId: p.foodItemId,
           date: p.date,
           timeSlot: p.timeSlot,
-          predictedQuantity: p.predictedQuantity,
-          recommendedQty: p.recommendedQty,
-          confidence: p.confidence
+          predictedQuantity: Math.max(0, Math.round(Number(p.predictedQuantity) || 0)),
+          recommendedQty: Math.max(0, Math.round(Number(p.recommendedQty) || 0)),
+          confidence: Math.min(1, Math.max(0, Number(p.confidence) || 0))
         }
       });
     }

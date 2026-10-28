@@ -149,11 +149,14 @@ app.post("/api/predictions/generate", async (_, res) => {
     });
 
     res.json(rows);
-
   } catch (e) {
     console.error("ML ERROR:", e);
     res.status(503).json({
       error: e instanceof Error ? e.message : String(e)
     });
   }
-app.listen(PORT,()=>console.log(`CanteenAI API running on http://localhost:${PORT}`));
+});
+
+app.listen(PORT, () => {
+  console.log(`CanteenAI API running on http://localhost:${PORT}`);
+});

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": { "dev": "tsx watch src/server.ts",
-  "start": "tsx src/server.ts",
+  "start": "node --import tsx src/server.ts",
   "seed": "tsx prisma/seed.ts",
   "prisma:generate": "prisma generate"
 
